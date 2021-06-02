@@ -12,7 +12,7 @@ BEGIN
     
     
     DECLARE busca_itens CURSOR FOR 
-		SELECT e.n_numeivenda,e.n_valoivenda,v.n_valovenda
+		SELECT e.n_numeivenda,sum(v.n_valovenda)
         FROM comivenda e
         inner join comvenda v
         WHERE e.n_numevenda = v.c_codivenda;
@@ -26,18 +26,28 @@ BEGIN
 			LEAVE itens;
 		END IF;
     
-		FETCH busca_itens into idVenda,venda,nVenda;
+		FETCH busca_itens into idVenda,nVenda;
         
-        SET vtotal_itens = (venda + nVenda);
+		SET vtotal_itens = nVenda;
+        
+		UPDATE comvenda SET n_totavenda = vtotal_itens
+        WHERE n_numevenda = NEW.n_numevenda limit 1;
+      
         
 	END LOOP itens;
 		CLOSE busca_itens;
-         
-        UPDATE comvenda SET n_totavenda = vtotal_itens
-        WHERE n_numevenda = NEW.n_numevenda limit 1;
 END //
 DELIMITER ;
 
+insert into comivenda values(DEFAULT,3,1,123.98,2,0.00);
+select * from comvenda;
+select * from comivenda;
+
+DELIMITER $$
+
+USE `comercial`$$
+DROP TRIGGER IF EXISTS `comercial`.`tri_vendas_ai` $$
+DELIMITER ;
 
         
         
